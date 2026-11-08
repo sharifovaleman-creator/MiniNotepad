@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Notepad</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="login-container" id="loginPage">
+        <h1>Mini Notepad</h1>
+        <p>Welcome! Please enter your information.</p>
+
+        <input type="text" id="userName" placeholder="Your name">
+
+        <input type="email" id="userEmail" placeholder="Your Gmail">
+
+        <button id="startBtn">Continue</button>
+    </div>
+
+    <div class="notes-container" id="notesPage" style="display: none;">
+        <h1 id="welcomeText">Welcome!</h1>
+
+        <textarea id="noteText" placeholder="Write your note..."></textarea>
+
+        <button id="saveBtn">Save Note</button>
+
+        <p id="status"></p>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+</body>
+</html>
