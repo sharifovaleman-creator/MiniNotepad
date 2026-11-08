@@ -1,8 +1,8 @@
 
 const SUPABASE_URL = "https://jcnaowojeuqufmymapzu.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Xa0ysJ29T-ndbqB2FkRUpA_XxW-QvMc";
-alert("URL: " + SUPABASE_URL);
-alert("Key: " + SUPABASE_KEY.substring(0, 10));
+
+
 const db = supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
@@ -21,12 +21,8 @@ const noteText = document.getElementById("noteText");
 const welcomeText = document.getElementById("welcomeText");
 const status = document.getElementById("status");
 
-// Check saved user
 let savedName = "";
 let savedEmail = "";
-if (savedName && savedEmail) {
-    showNotes();
-}
 
 // Login
 startBtn.addEventListener("click", function() {
@@ -44,14 +40,30 @@ startBtn.addEventListener("click", function() {
         return;
     }
 
-    localStorage.setItem("userName", name);
-    localStorage.setItem("userEmail", email);
-
     savedName = name;
     savedEmail = email;
 
     showNotes();
 });
+
+// Load shared note
+async function loadNote() {
+
+    const { data, error } = await db
+        .from("shared_notes")
+        .select("content")
+        .eq("id", 1)
+        .maybeSingle();
+
+    if (error) {
+        status.textContent = "Loading error: " + error.message;
+        console.log(error);
+        return;
+    }
+
+    noteText.value = data ? data.content : "";
+    status.textContent = "Ready!";
+}
 
 // Show notes
 async function showNotes() {
@@ -61,48 +73,40 @@ async function showNotes() {
 
     welcomeText.textContent = "Welcome, " + savedName + "!";
 
-    status.textContent = "Loading note...";
+    status.textContent = "Loading...";
 
-    const { data, error } = await db
-        .from("notes")
-        .select("content")
-        .eq("user_email", savedEmail)
-        .maybeSingle();
+    await loadNote();
 
-    if (error) {
-        status.textContent = "Error loading note!";
-        console.log(error);
-        return;
-    }
+    // Check for changes every 3 seconds
+    setInterval(async function() {
 
-    noteText.value = data ? data.content : "";
+        if (document.activeElement !== noteText) {
+            await loadNote();
+        }
 
-    status.textContent = "Ready!";
+    }, 3000);
 }
 
-// Save note
+// Save shared note
 saveBtn.addEventListener("click", async function() {
 
     status.textContent = "Saving...";
 
     const { error } = await db
-        .from("notes")
+        .from("shared_notes")
         .upsert({
-            user_email: savedEmail,
+            id: 1,
             user_name: savedName,
             content: noteText.value
         }, {
-            onConflict: "user_email"
+            onConflict: "id"
         });
 
     if (error) {
-    status.textContent = error.message;
-    alert(JSON.stringify(error));
-    console.log(error);
-    return;
-}
+        status.textContent = "Error: " + error.message;
+        console.log(error);
+        return;
+    }
 
     status.textContent = "Note saved successfully!";
 });
-
-
